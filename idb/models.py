@@ -12,36 +12,32 @@ from shapely.geometry import shape, mapping
 from idb.db import Base
 
 
-class Inventory(Base):
-    """Inventory data from IFO"""
-    __tablename__ = 'inventories'
-    id = Column(Integer, primary_key=True)
-    geom = Column(Geometry(geometry_type='POINT', srid=4326))
-    species_id = Column(Integer, ForeignKey('species.id'), index=True)
-    quality = Column(String)
-    tile_id = Column(Integer, ForeignKey('tiles.id'), index=True)
-    exp_num = Column(Integer) # Exploitation number
-    dbh = Column(Integer)
-    interpreted = Column(Boolean) # Whether this sample has already been interpreted or not
-    UniqueConstraint(tile_id, exp_num)
-
-    species = relationship("Species", back_populates="inventories")
-
-
-class Tile(Base):
-    """An IFO 50ha tile"""
-    __tablename__ = 'tiles'
-    id = Column(Integer, primary_key=True)
-    geom = Column(Geometry(geometry_type='POLYGON', srid=4326))
-    name = Column(String, unique=True)
-
-
 class Species(Base):
     """Species of the inventory"""
     __tablename__ = 'species'
     id = Column(Integer, primary_key=True)
     code = Column(String, unique=True)
     name = Column(String, unique=True)
+
+    inventories = relationship("Inventory", back_populates='species')
+    interpreted = relationship("Interpreted", back_populates='species')
+
+
+class Inventory(Base):
+    """Inventory data from IFO"""
+    __tablename__ = 'inventory'
+    id = Column(Integer, primary_key=True)
+    geom = Column(Geometry(geometry_type='POINT', srid=4326))
+    species_id = Column(Integer, ForeignKey('species.id'), index=True)
+    quality = Column(String)
+    tile_id = Column(Integer, ForeignKey('tile.id'), index=True, nullable=True)
+    exp_num = Column(Integer) # Exploitation number
+    dbh = Column(Integer)
+    is_interpreted = Column(Boolean) # Whether this sample has already been interpreted or not
+    UniqueConstraint(tile_id, exp_num)
+
+    species = relationship("Species", back_populates="inventories")
+    tile = relationship("Tile", back_populates="inventories")
 
 
 class Interpreted(Base):
@@ -50,6 +46,7 @@ class Interpreted(Base):
     id = Column(Integer, primary_key=True)
     geom = Column(Geometry(geometry_type='POLYGON', srid=4326))
     species_id = Column(Integer, ForeignKey('species.id'), index=True)
+    inventory_id = Column(Integer, ForeignKey('inventory.id'))
     time_created = Column(DateTime(timezone=True), server_default=func.now())
 
     species = relationship("Species", back_populates="interpreted")
@@ -84,14 +81,27 @@ class Interpreted(Base):
 
     @property
     def geojson(self):
-        return self.meta
-
-Species.interpreted = relationship("Interpreted", back_populates="species")
-Species.inventory = relationship("Inventory", back_populates="species")
+        pass
 
 
+class Tile(Base):
+    """An IFO 50ha tile"""
+    __tablename__ = 'tile'
+    id = Column(Integer, primary_key=True)
+    geom = Column(Geometry(geometry_type='POLYGON', srid=4326))
+    name = Column(String, unique=True)
+
+    inventories = relationship("Inventory", back_populates='tile')
 
 
-Collection.items = relationship("Item", back_populates="collection")
+class Studyarea(Base):
+    """Study areas, mostly used to restrict query to a given zone
+
+    Does not have explicit relation with other tables
+    """
+    __tablename__ = 'studyarea'
+    id = Column(Integer, primary_key=True)
+    geom = Column(Geometry(geometry_type='POLYGON', srid=4326))
+    name = Column(String, unique=True)
 
 
