@@ -39,6 +39,30 @@ class Inventory(Base):
     species = relationship("Species", back_populates="inventories")
     tile = relationship("Tile", back_populates="inventories")
 
+    @classmethod
+    def from_geojson(cls, feature, session):
+        """Create an instance of Inventory from a geojson feature
+
+        The feature must be a point with at least the following attributes.
+        ESPE_CODE: 3 letter code of the species
+        CLAS_CODE: Diameter
+        QUAL_CODE: Quality code
+        EXPLOIT_NU: exploitation number
+
+        TODO: PLACETTE attribute is ignored but should be included to populate tile_id
+        """
+        # Load Species object
+        sp = session.query(Species)\
+                .filter_by(code=feature['properties']['ESPE_CODE'])\
+                .first()
+        geom = from_shape(shape(feature['geometry']), 4326)
+        return cls(geom=geom,
+                   species=sp,
+                   quality=feature['properties'].get('QUAL_CODE', None),
+                   exp_num=int(feature['properties']['EXPLOIT_NU']),
+                   dbh=int(feature['properties']['CLAS_CODE']),
+                   is_interpreted=False)
+
 
 class Interpreted(Base):
     """Visually interpreted data"""

@@ -26,6 +26,7 @@ setup(name='idb',
           'geoalchemy2',
           'sqlalchemy',
           'shapely',
+          'fiona',
           'jsonschema',
           'psycopg2'],
       scripts=['idb/scripts/db_init.py'])

@@ -37,3 +37,9 @@ Example minimum configuration file (name: ``~/.idb``)
 Ingest test data into the database
 ==================================
 
+Navigate to the ``tests`` directory and run the ``ingests_test_data.py`` script.
+
+.. code-block:: bash
+
+    cd tests
+    ./ingests_test_data.py

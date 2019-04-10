@@ -18,7 +18,6 @@ def add_inventory_list(session, fc):
     """
     if not isinstance(fc, list):
         fc = [fc]
-    collection = session.query(Collection).filter_by(name=collection).first()
     instance_list = [Inventory.from_geojson(feature=x, session=session)
                      for x in fc]
     session.add_all(instance_list)
