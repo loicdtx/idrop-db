@@ -27,5 +27,5 @@ setup(name='idb',
           'sqlalchemy',
           'shapely',
           'jsonschema',
-          'psycopg2'
-      ])
+          'psycopg2'],
+      scripts=['idb/scripts/db_init.py'])
