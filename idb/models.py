@@ -10,6 +10,7 @@ from geoalchemy2.shape import from_shape, to_shape
 from shapely.geometry import shape, mapping
 
 from idb.db import Base
+from idb.utils import get_or_create
 
 
 class Species(Base):
@@ -48,16 +49,18 @@ class Inventory(Base):
         CLAS_CODE: Diameter
         QUAL_CODE: Quality code
         EXPLOIT_NU: exploitation number
-
-        TODO: PLACETTE attribute is ignored but should be included to populate tile_id
+        PLACETTE: Name of the inventory tile
         """
         # Load Species object
         sp = session.query(Species)\
                 .filter_by(code=feature['properties']['ESPE_CODE'])\
                 .first()
+        tile = get_or_create(session=session, model=Tile,
+                             name=feature['properties']['PLACETTE'])
         geom = from_shape(shape(feature['geometry']), 4326)
         return cls(geom=geom,
                    species=sp,
+                   tile=tile,
                    quality=feature['properties'].get('QUAL_CODE', None),
                    exp_num=int(feature['properties']['EXPLOIT_NU']),
                    dbh=int(feature['properties']['CLAS_CODE']),
@@ -116,6 +119,16 @@ class Tile(Base):
     name = Column(String, unique=True)
 
     inventories = relationship("Inventory", back_populates='tile')
+
+    @classmethod
+    def from_geojson(cls, feature):
+        """Create an instance of Tile from a geojson feature
+
+        The feature must be a polygon with name as attribute
+        """
+        geom = from_shape(shape(feature['geometry']), 4326)
+        return cls(geom=geom,
+                   name=feature['properties']['name'])
 
 
 class Studyarea(Base):
