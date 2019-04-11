@@ -28,5 +28,5 @@ setup(name='idb',
           'shapely',
           'fiona',
           'jsonschema',
-          'psycopg2'],
+          'psycopg2-binary'],
       scripts=['idb/scripts/db_init.py'])
