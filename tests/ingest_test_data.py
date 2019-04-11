@@ -3,8 +3,8 @@
 import fiona
 
 from idb.db import session_scope
-from idb import add_inventory_list
-from idb.models import Tile
+from idb import add_inventories
+from idb.models import Tile, Studyarea
 
 
 gpkg_file = 'data/test_data.gpkg'
@@ -18,4 +18,11 @@ with session_scope() as session:
 # Add inventory samples
 with fiona.open(gpkg_file, layer='inventory') as src:
     with session_scope() as session:
-        add_inventory_list(session, list(src))
+        add_inventories(session, list(src))
+
+# Add study area
+with fiona.open(gpkg_file, layer='studyarea') as src:
+    studyarea_list = [Studyarea.from_geojson(feature) for feature in src]
+with session_scope() as session:
+    session.add_all(studyarea_list)
+

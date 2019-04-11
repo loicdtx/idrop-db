@@ -66,6 +66,18 @@ class Inventory(Base):
                    dbh=int(feature['properties']['CLAS_CODE']),
                    is_interpreted=False)
 
+    @property
+    def geojson(self):
+        feature = {'type': 'Feature',
+                   'properties': {'speciesName': self.species.name,
+                                  'speciesCode': self.species.code,
+                                  'speciesId': self.species_id,
+                                  'quality': self.quality,
+                                  'dbh': self.dbh,
+                                  'id': self.id},
+                   'geometry': mapping(to_shape(self.geom))}
+        return feature
+
 
 class Interpreted(Base):
     """Visually interpreted data"""
@@ -140,5 +152,21 @@ class Studyarea(Base):
     id = Column(Integer, primary_key=True)
     geom = Column(Geometry(geometry_type='POLYGON', srid=4326))
     name = Column(String, unique=True)
+
+    @property
+    def geojson(self):
+        feature = {'type': 'Feature',
+                   'properties': {'name': self.name,
+                                  'id': self.id},
+                   'geometry': mapping(to_shape(self.geom))}
+        return feature
+
+    @classmethod
+    def from_geojson(cls, feature):
+        geom = from_shape(shape(feature['geometry']), 4326)
+        return cls(geom=geom,
+                   name=feature['properties']['name'])
+
+
 
 
