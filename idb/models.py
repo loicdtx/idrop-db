@@ -91,36 +91,29 @@ class Interpreted(Base):
     species = relationship("Species", back_populates="interpreted")
 
     @classmethod
-    def from_geojson(cls, feature, species, session=None):
-        """Class method to instantiate an Item object from a metadata description
+    def from_geojson(cls, feature):
+        """Class method to instantiate an Interpreted object from a feature
 
         Args:
-            feature (dict): A geojson feature that complies with the item json
-                schema
-            species (str or idb.models.Species): Species associated with the interpreted sample
-            session (Session): Optional database session. Only required when species is
-                a string.
+            feature (dict): A geojson feature with at least ``species_id`` and
+                ``inventory_id`` attributes
         """
-        # Load collection object
-        if isinstance(collection, str):
-            collection = session.query(Collection).filter_by(name=collection).first()
-        # Validate geojson feature
-        validate(feature, ITEM_SCHEMA)
         # Build geom
         geom = from_shape(shape(feature['geometry']), 4326)
-        # Parse datetime
-        t = dt.datetime.strptime(feature['properties']['datetime'],
-                                 '%Y-%m-%dT%H:%M:%SZ')
         # Build object
-        return cls(name=feature['id'],
-                   geom=geom,
-                   time=t,
-                   meta=feature,
-                   collection=collection)
+        return cls(geom=geom,
+                   species_id=feature['properties']['species_id'],
+                   inventory_id=feature['properties']['inventory_id'])
 
     @property
     def geojson(self):
-        pass
+        feature = {'type': 'Feature',
+                   'properties': {'species_id': self.species_id,
+                                  'species_name': self.species.name,
+                                  'inventory_id': self.inventory_id,
+                                  'id': self.id},
+                   'geometry': mapping(to_shape(self.geom))}
+        return feature
 
 
 class Tile(Base):

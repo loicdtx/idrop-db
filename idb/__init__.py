@@ -52,3 +52,18 @@ def inventories(session, n_samples=1, study_area_id=None, species_id=None):
     objects = objects.order_by(func.random()).limit(n_samples).all()
     return {'type': 'FeatureCollection',
             'features': [x.geojson for x in objects]}
+
+def add_interpreted(session, fc):
+    """Add one or many interpreted records to the database
+
+    Args:
+        session (Session): sqlalchemy database session;
+            see ``idb.db.session_scope``
+        fc (list): List of geojson features (or a single feature)
+    """
+    if not isinstance(fc, list):
+        fc = [fc]
+    instance_list = [Interpreted.from_geojson(feature=x, session=session)
+                     for x in fc]
+    session.add_all(instance_list)
+

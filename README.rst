@@ -13,8 +13,7 @@ Example minimum configuration file (name: ``~/.idb``)
     # db_hostname=
     # db_password=
     # db_username=
-    
-    
+
 
 3- Create database and add postgis extention
 
@@ -28,7 +27,7 @@ Example minimum configuration file (name: ``~/.idb``)
 
 .. code-block:: bash
 
-    db_init.py
+    db_init.py --species tests/data/species.csv
 
 5- Verify that tables have been created properly
 
