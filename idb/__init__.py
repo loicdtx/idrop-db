@@ -53,6 +53,7 @@ def inventories(session, n_samples=1, study_area_id=None, species_id=None):
     return {'type': 'FeatureCollection',
             'features': [x.geojson for x in objects]}
 
+
 def add_interpreted(session, fc):
     """Add one or many interpreted records to the database
 
@@ -67,3 +68,15 @@ def add_interpreted(session, fc):
                      for x in fc]
     session.add_all(instance_list)
 
+
+def species(session):
+    """Return a list of all species registered in the database
+
+    Args:
+        session: sqlalchemy database session
+
+    Return:
+        list: List of species (list of dict)
+    """
+    objects = session.query(Species)
+    return [x.dict for x in objects]

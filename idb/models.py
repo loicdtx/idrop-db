@@ -23,6 +23,12 @@ class Species(Base):
     inventories = relationship("Inventory", back_populates='species')
     interpreted = relationship("Interpreted", back_populates='species')
 
+    @property
+    def dict(self):
+        return {'id': self.id,
+                'code': self.code,
+                'name': self.name}
+
 
 class Inventory(Base):
     """Inventory data from IFO"""
