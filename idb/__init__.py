@@ -67,11 +67,11 @@ def add_interpreted(session, fc):
     """
     if not isinstance(fc, list):
         fc = [fc]
-    instance_list = [Interpreted.from_geojson(feature=x, session=session)
+    instance_list = [Interpreted.from_geojson(feature=x)
                      for x in fc]
     session.add_all(instance_list)
     session.flush()
-    return [x.geojson for x in fc]
+    return [x.geojson for x in instance_list]
 
 
 def interpreted(session, n_samples=10):
