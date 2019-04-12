@@ -2,6 +2,7 @@ Install
 =======
 
 1- Install postgres + postgis
+
 2- Create database configuration file
 
 Example minimum configuration file (name: ``~/.idb``)
@@ -22,6 +23,8 @@ Example minimum configuration file (name: ``~/.idb``)
     createdb idrop
     psql idrop -c "CREATE EXTENSION postgis;"
     psql idrop -c "CREATE EXTENSION postgis_topology;"
+    # Optionally create dedicated user (probably better for remote access)
+    psql idrop -c "CREATE USER idrop_user WITH PASSWORD 'qwerty' CREATEDB;"
 
 4- Create tables
 

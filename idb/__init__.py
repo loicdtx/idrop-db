@@ -61,12 +61,31 @@ def add_interpreted(session, fc):
         session (Session): sqlalchemy database session;
             see ``idb.db.session_scope``
         fc (list): List of geojson features (or a single feature)
+
+    Returns:
+        list: list of geojson representations of inserted features
     """
     if not isinstance(fc, list):
         fc = [fc]
     instance_list = [Interpreted.from_geojson(feature=x, session=session)
                      for x in fc]
     session.add_all(instance_list)
+    session.flush()
+    return [x.geojson for x in fc]
+
+
+def interpreted(session, n_samples=10):
+    """Return a list of all interpreted records registered in the database
+
+    Args:
+        session: sqlalchemy database session
+        n_samples (int): Limit number of objects returned
+
+    Return:
+        dict: A feature collection
+    """
+    objects = session.query(Interpreted).limit(n_samples).all()
+    return [x.geojson for x in objects]
 
 
 def species(session):
@@ -80,3 +99,16 @@ def species(session):
     """
     objects = session.query(Species)
     return [x.dict for x in objects]
+
+
+def studyareas(session):
+    """Return a list of all study areas registered in the database
+
+    Args:
+        session: sqlalchemy database session
+
+    Return:
+        list: List of study areas (list of dict)
+    """
+    objects = session.query(Studyarea)
+    return [x.geojson for x in objects]
