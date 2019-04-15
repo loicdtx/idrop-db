@@ -25,19 +25,29 @@ def add_inventories(session, fc):
     session.add_all(instance_list)
 
 
-def inventories(session, n_samples=1, study_area_id=None, species_id=None):
+def inventories(session, n_samples=1, study_area_id=None, species_id=None,
+                is_interpreted=False):
     """Query the Inventory table with optional filters
+
+    Only returns samples with ``is_interpreted`` set to False
 
     Args:
         session: A database session (see idb.db.session_scope)
         n_samples (int): Number of samples
         study_area_id (int): Optinal Studyarea id
         species_id (int): Optional Species id
+        is_interpreted (bool): Filter on ``is_interpreted`` field,
+            defaults to False (keep only records that have not yet been interpreted)
+            Can also be None, in which case all interpreted and not interpreted
+            records are returned
 
     Returns:
         dict: A feature collection
     """
     objects = session.query(Inventory)
+    # is_interpreted filter (default is False)
+    if is_interpreted is not None:
+        objects = objects.filter(Inventory.is_interpreted.is_(is_interpreted))
     # Study area filter (st_intersects)
     if study_area_id is not None:
         study_area_geom = session.query(Studyarea)\
@@ -52,6 +62,18 @@ def inventories(session, n_samples=1, study_area_id=None, species_id=None):
     objects = objects.order_by(func.random()).limit(n_samples).all()
     return {'type': 'FeatureCollection',
             'features': [x.geojson for x in objects]}
+
+
+def update_inventory(session, id, is_interpreted):
+    """Update an inventory record
+
+    Usually used to change the is_interpreted column to True after interpreting
+    or skipping the sample
+    """
+    updated = session.query(Inventory)\
+            .filter_by(id=id)\
+            .update(is_interpreted=is_interpreted)
+    return updated.geojson
 
 
 def add_interpreted(session, fc):
