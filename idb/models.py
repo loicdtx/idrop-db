@@ -75,9 +75,9 @@ class Inventory(Base):
     @property
     def geojson(self):
         feature = {'type': 'Feature',
-                   'properties': {'speciesName': self.species.name,
-                                  'speciesCode': self.species.code,
-                                  'speciesId': self.species_id,
+                   'properties': {'species_name': self.species.name,
+                                  'species_code': self.species.code,
+                                  'species_id': self.species_id,
                                   'quality': self.quality,
                                   'dbh': self.dbh,
                                   'id': self.id},
