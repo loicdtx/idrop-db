@@ -64,6 +64,15 @@ def inventories(session, n_samples=1, study_area_id=None, species_id=None,
             'features': [x.geojson for x in objects]}
 
 
+def inventory(session, id):
+    """Get a single inventory record by id
+    """
+    obj = session.query(Inventory).get(id)
+    if obj is not None:
+        obj = obj.geojson
+    return obj
+
+
 def update_inventory(session, id, is_interpreted):
     """Update an inventory record
 
@@ -110,6 +119,15 @@ def interpreted(session, n_samples=10):
     return [x.geojson for x in objects]
 
 
+def interpreted_by_id(session, id):
+    """Get a single interpreted record by its id
+    """
+    obj = session.query(Interpreted).get(id)
+    if obj is not None:
+        obj = obj.geojson
+    return obj
+
+
 def species(session):
     """Return a list of all species registered in the database
 
@@ -134,3 +152,12 @@ def studyareas(session):
     """
     objects = session.query(Studyarea)
     return [x.geojson for x in objects]
+
+
+def studyarea(session, id):
+    """Query study area by id
+    """
+    obj = session.query(Studyarea).get(id)
+    if obj is not None:
+        obj = obj.geojson
+    return obj
