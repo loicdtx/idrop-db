@@ -41,3 +41,13 @@ def camelify(string):
     def _camel(match):
         return match.group(1) + match.group(2).upper()
     return re.sub(r'(.*?)_([a-zA-Z])', _camel, string)
+
+
+def camelify_feature(feature):
+    """Camelify the properties keys of a feature and return the
+    camelified feature
+    """
+    feature['properties'] = {camelify(k):v for k,v in
+                             feature['properties'].items()}
+    return feature
+
