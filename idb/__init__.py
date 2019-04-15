@@ -78,11 +78,14 @@ def update_inventory(session, id, is_interpreted):
 
     Usually used to change the is_interpreted column to True after interpreting
     or skipping the sample
+
+    Return:
+        int: 1 when successful, 0 otherwise
     """
     updated = session.query(Inventory)\
             .filter_by(id=id)\
-            .update(is_interpreted=is_interpreted)
-    return updated.geojson
+            .update(dict(is_interpreted=is_interpreted))
+    return updated
 
 
 def add_interpreted(session, fc):
