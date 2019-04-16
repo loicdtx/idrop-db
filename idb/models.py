@@ -80,6 +80,7 @@ class Inventory(Base):
                                   'species_id': self.species_id,
                                   'quality': self.quality,
                                   'dbh': self.dbh,
+                                  'is_interpreted': self.is_interpreted,
                                   'id': self.id},
                    'geometry': mapping(to_shape(self.geom))}
         return feature

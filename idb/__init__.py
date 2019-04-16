@@ -119,7 +119,8 @@ def interpreted(session, n_samples=10):
         dict: A feature collection
     """
     objects = session.query(Interpreted).limit(n_samples).all()
-    return [x.geojson for x in objects]
+    return {'type': 'FeatureCollection',
+            'features': [x.geojson for x in objects]}
 
 
 def interpreted_by_id(session, id):
@@ -154,7 +155,8 @@ def studyareas(session):
         list: List of study areas (list of dict)
     """
     objects = session.query(Studyarea)
-    return [x.geojson for x in objects]
+    return {'type': 'FeatureCollection',
+            'features': [x.geojson for x in objects]}
 
 
 def studyarea(session, id):
