@@ -25,7 +25,7 @@ def add_inventories(session, fc):
     session.add_all(instance_list)
 
 
-def inventories(session, n_samples=1, study_area_id=None, species_id=None,
+def inventories(session, n_samples=None, study_area_id=None, species_id=None,
                 is_interpreted=False):
     """Query the Inventory table with optional filters
 
@@ -33,7 +33,7 @@ def inventories(session, n_samples=1, study_area_id=None, species_id=None,
 
     Args:
         session: A database session (see idb.db.session_scope)
-        n_samples (int): Number of samples
+        n_samples (int): Number of samples (no limit if None (default))
         study_area_id (int): Optinal Studyarea id
         species_id (int): Optional Species id
         is_interpreted (bool): Filter on ``is_interpreted`` field,
@@ -108,7 +108,7 @@ def add_interpreted(session, fc):
     return [x.geojson for x in instance_list]
 
 
-def interpreted(session, n_samples=10):
+def interpreted(session, n_samples=None):
     """Return a list of all interpreted records registered in the database
 
     Args:
