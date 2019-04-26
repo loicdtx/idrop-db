@@ -29,4 +29,5 @@ setup(name='idb',
           'fiona',
           'jsonschema',
           'psycopg2-binary'],
-      scripts=['idb/scripts/db_init.py'])
+      scripts=['idb/scripts/db_init.py',
+               'idb/scripts/ingest_inventory.py'])

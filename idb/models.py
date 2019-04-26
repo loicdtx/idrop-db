@@ -41,7 +41,7 @@ class Inventory(Base):
     exp_num = Column(Integer) # Exploitation number
     dbh = Column(Integer)
     is_interpreted = Column(Boolean) # Whether this sample has already been interpreted or not
-    UniqueConstraint(tile_id, exp_num)
+    # UniqueConstraint(tile_id, exp_num)
 
     species = relationship("Species", back_populates="inventories")
     tile = relationship("Tile", back_populates="inventories")

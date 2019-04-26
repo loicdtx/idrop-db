@@ -5,7 +5,7 @@ from  sqlalchemy.sql.expression import func
 
 from idb.models import Species, Inventory, Interpreted, Studyarea
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 
 def add_inventories(session, fc):
