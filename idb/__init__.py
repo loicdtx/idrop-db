@@ -126,13 +126,10 @@ def replace_interpreted(session, id, feature):
     # a better way to do it
     # Create an instance of Interpreted
     new_row = Interpreted.from_geojson(feature)
-    # Query the row by id an update it
-    updated = session.query(Interpreted)\
-            .filter_by(id=id)\
-            .update(dict(geom=new_row.geom,
-                         species_id=new_row.species_id,
-                         inventory_id=new_row.inventory_id))
-    return updated.geojson
+    new_row.id = id
+    # Update by merging
+    session.merge(new_row)
+    return True
 
 
 def interpreted(session, n_samples=None):
