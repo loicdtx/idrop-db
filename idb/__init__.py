@@ -108,6 +108,33 @@ def add_interpreted(session, fc):
     return [x.geojson for x in instance_list]
 
 
+def replace_interpreted(session, id, feature):
+    """Update an existing row (identified by id) in the interpreted table
+
+    Args:
+        session (Session): sqlalchemy database session;
+            see ``idb.db.session_scope``
+        id (int): Unique row id of the sample to update in the database
+        feature (dict): The geojson like feature to use for updating the record
+            Should contain a geometry and the two properties ``inventory_id`` and
+            ``species_id``
+
+    Returns:
+        dict: The feature representation of the updated record
+    """
+    # The way replacement is done right now is a bit of a hack, there's probably
+    # a better way to do it
+    # Create an instance of Interpreted
+    new_row = Interpreted.from_geojson(feature)
+    # Query the row by id an update it
+    updated = session.query(Interpreted)\
+            .filter_by(id=id)\
+            .update(dict(geom=new_row.geom,
+                         species_id=new_row.species_id,
+                         inventory_id=new_row.inventory_id))
+    return updated.geojson
+
+
 def interpreted(session, n_samples=None):
     """Return a list of all interpreted records registered in the database
 
