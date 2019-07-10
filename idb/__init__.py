@@ -5,7 +5,7 @@ from  sqlalchemy.sql.expression import func
 
 from idb.models import Species, Inventory, Interpreted, Studyarea
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 
 
 def add_inventories(session, fc):
@@ -132,17 +132,26 @@ def replace_interpreted(session, id, feature):
     return True
 
 
-def interpreted(session, n_samples=None):
+def interpreted(session, n_samples=None, species_id=None, inventory_id=None):
     """Return a list of all interpreted records registered in the database
 
     Args:
         session: sqlalchemy database session
         n_samples (int): Limit number of objects returned
+        species_id (int): Optional species_id filter
+        inventory_id (int): Optional inventory_id filter (returns a list of max
+            one element)
 
     Return:
         dict: A feature collection
     """
-    objects = session.query(Interpreted).limit(n_samples).all()
+    objects = session.query(Interpreted)
+    if species_id is not None:
+        objects = objects.filter_by(species_id=species_id)
+    if inventory_id is not None:
+        objects = objects.filter_by(inventory_id=inventory_id)
+    # limit number of results
+    objects = objects.limit(n_samples).all()
     return {'type': 'FeatureCollection',
             'features': [x.geojson for x in objects]}
 
