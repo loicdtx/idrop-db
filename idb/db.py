@@ -5,12 +5,13 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine.url import URL
 
-from idb.globals import DB_DATABASE, DB_HOSTNAME, DB_PASSWORD, DB_USERNAME
+from idb.globals import DB_DATABASE, DB_HOSTNAME, DB_PASSWORD, DB_USERNAME, DB_PORT
 
 db_params = {'drivername': 'postgresql',
              'database': DB_DATABASE,
              'username': DB_USERNAME,
              'host': DB_HOSTNAME,
+             'port': DB_PORT,
              'password': DB_PASSWORD}
 
 db_url = URL(**db_params)
