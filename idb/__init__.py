@@ -1,11 +1,12 @@
 from sqlalchemy.types import Numeric
 from shapely.geometry import shape
 
-from  sqlalchemy.sql.expression import func
+from  sqlalchemy.sql.expression import func, cast
+from geoalchemy2 import Geography
 
 from idb.models import Species, Inventory, Interpreted, Studyarea
 
-__version__ = '0.0.3'
+__version__ = '0.0.4'
 
 
 def add_inventories(session, fc):
@@ -199,3 +200,36 @@ def studyarea(session, id):
     if obj is not None:
         obj = obj.geojson
     return obj
+
+
+def neighborhood(session, inventory_id=None, distance=None, species_id=None):
+    """Performs a spatial search of inventory records in a given radius around a point
+
+    Args:
+        session: sqlalchemy database session
+        inventory_id (int): The database id of an inventory record. Seach will
+            performed around the geometry of that record
+        distance (float): Search radius in meters
+        species_id (list): A list of species_id to restrict the search to
+
+    Return:
+        dict: A feature collection of the inventory features intersecting with
+            the search radius around the feature provided. The input feature is
+            automatically excluded from the collection
+    """
+    geog = cast(session.query(Inventory).get(inventory_id).geom, Geography)
+    buff = geog.ST_Buffer(distance)
+    # Run the spatial search with no other restriction
+    objects = session.query(Inventory).filter(Inventory.geom.ST_Intersects(buff))
+    # Remove initial inventory record from the queryset
+    objects = objects.filter(Inventory.id != inventory_id)
+    # Optionally restrict queryset to the species of interest
+    if species_id is not None:
+        if not isinstance(species_id, list):
+            species_id = [species_id]
+        objects = objects.filter(Inventory.species_id.in_(species_id))
+    return {'type': 'FeatureCollection',
+            'features': [x.geojson for x in objects]}
+
+neighbourhood = neighborhood
+
