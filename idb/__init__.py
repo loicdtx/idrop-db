@@ -58,7 +58,7 @@ def _inventories(session, n_samples=None, study_area_id=None, species_id=None,
     if species_id is not None:
         objects = objects.filter_by(species_id=species_id)
     # Select n random samples from the remaining rows
-    objects = objects.order_by(func.random()).limit(n_samples).all()
+    objects = objects.order_by(func.random()).limit(n_samples)
     return objects
 
 
@@ -85,7 +85,7 @@ def inventories(session, n_samples=None, study_area_id=None, species_id=None,
                            study_area_id=study_area_id, species_id=species_id,
                            is_interpreted=is_interpreted)
     return {'type': 'FeatureCollection',
-            'features': [x.geojson for x in objects]}
+            'features': [x.geojson for x in objects.all()]}
 
 
 def inventories_hits(session, n_samples=None, study_area_id=None, species_id=None,
