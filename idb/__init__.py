@@ -26,6 +26,42 @@ def add_inventories(session, fc):
     session.add_all(instance_list)
 
 
+def _inventories(session, n_samples=None, study_area_id=None, species_id=None,
+                 is_interpreted=False):
+    """Build a Query to filter the Inventory table
+
+    Args:
+        session: A database session (see idb.db.session_scope)
+        n_samples (int): Number of samples (no limit if None (default))
+        study_area_id (int): Optinal Studyarea id
+        species_id (int): Optional Species id
+        is_interpreted (bool): Filter on ``is_interpreted`` field,
+            defaults to False (keep only records that have not yet been interpreted)
+            Can also be None, in which case all interpreted and not interpreted
+            records are returned
+
+    Returns:
+        sqlalchemy.Query: The sqlalchemy query
+    """
+    objects = session.query(Inventory)
+    # is_interpreted filter (default is False)
+    if is_interpreted is not None:
+        objects = objects.filter(Inventory.is_interpreted.is_(is_interpreted))
+    # Study area filter (st_intersects)
+    if study_area_id is not None:
+        study_area_geom = session.query(Studyarea)\
+                .filter_by(id=study_area_id)\
+                .first()\
+                .geom
+        objects = objects.filter(Inventory.geom.ST_Intersects(study_area_geom))
+    # Restrict for only one species
+    if species_id is not None:
+        objects = objects.filter_by(species_id=species_id)
+    # Select n random samples from the remaining rows
+    objects = objects.order_by(func.random()).limit(n_samples).all()
+    return objects
+
+
 def inventories(session, n_samples=None, study_area_id=None, species_id=None,
                 is_interpreted=False):
     """Query the Inventory table with optional filters
@@ -45,24 +81,37 @@ def inventories(session, n_samples=None, study_area_id=None, species_id=None,
     Returns:
         dict: A feature collection
     """
-    objects = session.query(Inventory)
-    # is_interpreted filter (default is False)
-    if is_interpreted is not None:
-        objects = objects.filter(Inventory.is_interpreted.is_(is_interpreted))
-    # Study area filter (st_intersects)
-    if study_area_id is not None:
-        study_area_geom = session.query(Studyarea)\
-                .filter_by(id=study_area_id)\
-                .first()\
-                .geom
-        objects = objects.filter(Inventory.geom.ST_Intersects(study_area_geom))
-    # Restrict for only one species
-    if species_id is not None:
-        objects = objects.filter_by(species_id=species_id)
-    # Select n random samples from the remaining rows
-    objects = objects.order_by(func.random()).limit(n_samples).all()
+    objects = _inventories(session=session, n_samples=n_samples,
+                           study_area_id=study_area_id, species_id=species_id,
+                           is_interpreted=is_interpreted)
     return {'type': 'FeatureCollection',
             'features': [x.geojson for x in objects]}
+
+
+def inventories_hits(session, n_samples=None, study_area_id=None, species_id=None,
+                     is_interpreted=False):
+    """Get the length of a query with filters on the Inventory table
+
+    Is meant to know the length of samples that a call to ``idb.inventories``
+    would return without actually returning the feature collection
+
+    Args:
+        session: A database session (see idb.db.session_scope)
+        n_samples (int): Number of samples (no limit if None (default))
+        study_area_id (int): Optinal Studyarea id
+        species_id (int): Optional Species id
+        is_interpreted (bool): Filter on ``is_interpreted`` field,
+            defaults to False (keep only records that have not yet been interpreted)
+            Can also be None, in which case all interpreted and not interpreted
+            records are returned
+
+    Returns:
+        int: The length of rows queried
+    """
+    objects = _inventories(session=session, n_samples=n_samples,
+                           study_area_id=study_area_id, species_id=species_id,
+                           is_interpreted=is_interpreted)
+    return objects.count()
 
 
 def inventory(session, id):
