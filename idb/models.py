@@ -1,6 +1,6 @@
 import datetime as dt
 
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, Text
 from sqlalchemy import DateTime, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -168,5 +168,13 @@ class Studyarea(Base):
                    name=feature['properties']['name'])
 
 
+class Comment(Base):
+    """Track people that interpreters leave while working"""
+    __tablename__ = 'comment'
+    id = Column(Integer, primary_key=True)
+    interpreted_id = Column(Integer, ForeignKey('interpreted.id'))
+    inventory_id = Column(Integer, ForeignKey('inventory.id'))
+    comment = Column(Text)
+    time_created = Column(DateTime(timezone=True), server_default=func.now())
 
 
