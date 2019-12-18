@@ -41,10 +41,13 @@ class Inventory(Base):
     exp_num = Column(Integer) # Exploitation number
     dbh = Column(Integer)
     is_interpreted = Column(Boolean) # Whether this sample has already been interpreted or not
+    comment = Column(Text, nullable=True)
     # UniqueConstraint(tile_id, exp_num)
 
     species = relationship("Species", back_populates="inventories")
     tile = relationship("Tile", back_populates="inventories")
+    interpreted = relationship("Interpreted", uselist=False,
+                               back_populates="inventory")
 
     @classmethod
     def from_geojson(cls, feature, session):
@@ -81,6 +84,7 @@ class Inventory(Base):
                                   'quality': self.quality,
                                   'dbh': self.dbh,
                                   'is_interpreted': self.is_interpreted,
+                                  'comment': self.comment,
                                   'id': self.id},
                    'geometry': mapping(to_shape(self.geom))}
         return feature
@@ -96,6 +100,7 @@ class Interpreted(Base):
     time_created = Column(DateTime(timezone=True), server_default=func.now())
 
     species = relationship("Species", back_populates="interpreted")
+    inventory = relationship("Inventory", back_populates="interpreted")
 
     @classmethod
     def from_geojson(cls, feature):
@@ -166,15 +171,4 @@ class Studyarea(Base):
         geom = from_shape(shape(feature['geometry']), 4326)
         return cls(geom=geom,
                    name=feature['properties']['name'])
-
-
-class Comment(Base):
-    """Track people that interpreters leave while working"""
-    __tablename__ = 'comment'
-    id = Column(Integer, primary_key=True)
-    interpreted_id = Column(Integer, ForeignKey('interpreted.id'))
-    inventory_id = Column(Integer, ForeignKey('inventory.id'))
-    comment = Column(Text)
-    time_created = Column(DateTime(timezone=True), server_default=func.now())
-
 

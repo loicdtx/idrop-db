@@ -123,18 +123,23 @@ def inventory(session, id):
     return obj
 
 
-def update_inventory(session, id, is_interpreted):
+def update_inventory(session, id, is_interpreted=None, comment=None):
     """Update an inventory record
 
     Usually used to change the is_interpreted column to True after interpreting
     or skipping the sample
+    Can also be used to add a comment (new feature)
 
     Return:
         int: 1 when successful, 0 otherwise
     """
+    update_dict_0 = {'is_interpreted': is_interpreted,
+                     'comment': comment}
+    # Remove None to avoid overriding existing values
+    update_dict_1 = {k:v for k,v in update_dict_0.items() if v is not None}
     updated = session.query(Inventory)\
             .filter_by(id=id)\
-            .update(dict(is_interpreted=is_interpreted))
+            .update(update_dict_1)
     return updated
 
 
@@ -281,4 +286,3 @@ def neighborhood(session, inventory_id=None, distance=None, species_id=None):
             'features': [x.geojson for x in objects]}
 
 neighbourhood = neighborhood
-
