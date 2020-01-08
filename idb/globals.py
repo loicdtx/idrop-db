@@ -5,12 +5,16 @@ import pkgutil
 
 
 conf_file = os.path.expanduser('~/.idb')
-config = ConfigParser()
+config = ConfigParser(defaults={'drivername': 'postgresql'})
 config.read(conf_file)
 
-DB_DATABASE = config['idb'].get('db_database', None)
-DB_HOSTNAME = config['idb'].get('db_hostname', None)
-DB_USERNAME = config['idb'].get('db_username', None)
-DB_PASSWORD = config['idb'].get('db_password', None)
-DB_PORT = config['idb'].get('db_port', None)
+# Put everything in a separate variable to avoid confusion
+DB_CONFIG = config
+
+
+
+
+
+
+
 

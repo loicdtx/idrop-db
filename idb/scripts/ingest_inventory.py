@@ -21,7 +21,7 @@ List of species must have been ingested previously (e.g. using the db_init comma
 with the --species flag)
 
 Example:
-    ingest_inventory.py inventory.gpkg
+    ingest_inventory.py inventory.gpkg --env main
 """
     parser = argparse.ArgumentParser(epilog=epilog,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -30,24 +30,31 @@ Example:
                         type=str,
                         help='Multilayer geospatial vector file containing the inventory data')
 
+    parser.add_argument('-env', '--env',
+                        required=False,
+                        default='main',
+                        type=str,
+                        help='env to use (database), as defined in the .idb file')
+
     parsed_args = parser.parse_args()
 
     gpkg_file = vars(parsed_args)['inventory']
+    env = vars(parsed_args)['env']
 
 # Add tiles
 with fiona.open(gpkg_file, layer='tiles') as src:
     tile_list = [Tile.from_geojson(feature) for feature in src]
-with session_scope() as session:
+with session_scope(env=env) as session:
     session.add_all(tile_list)
 
 # Add inventory samples
 with fiona.open(gpkg_file, layer='inventory') as src:
-    with session_scope() as session:
+    with session_scope(env=env) as session:
         add_inventories(session, list(src))
 
 # Add study area
 with fiona.open(gpkg_file, layer='studyarea') as src:
     studyarea_list = [Studyarea.from_geojson(feature) for feature in src]
-with session_scope() as session:
+with session_scope(env=env) as session:
     session.add_all(studyarea_list)
 

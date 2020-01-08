@@ -27,15 +27,22 @@ Example:
                         type=str,
                         help='csv file containing species codes and species names')
 
+    parser.add_argument('-env', '--env',
+                        required=False,
+                        default='main',
+                        type=str,
+                        help='env to use (database), as defined in the .idb file')
+
     parsed_args = parser.parse_args()
 
     csv_path = vars(parsed_args)['species']
-    init_db()
+    env = vars(parsed_args)['env']
+    init_db(env=env)
 
     if csv_path is not None:
         with open(csv_path) as src:
             reader = csv.reader(src)
-            with session_scope() as session:
+            with session_scope(env=env) as session:
                 for row in reader:
                     get_or_create(session=session, model=Species,
                                   code=row[0], name=row[1])
