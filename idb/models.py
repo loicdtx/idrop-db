@@ -34,7 +34,7 @@ class Inventory(Base):
     """Inventory data from IFO"""
     __tablename__ = 'inventory'
     id = Column(Integer, primary_key=True)
-    geom = Column(Geometry(geometry_type='POINT', srid=4326))
+    geom = Column(Geometry(geometry_type='POINT', srid=4326, management=True))
     species_id = Column(Integer, ForeignKey('species.id'), index=True)
     quality = Column(String)
     tile_id = Column(Integer, ForeignKey('tile.id'), index=True, nullable=True)
@@ -94,7 +94,7 @@ class Interpreted(Base):
     """Visually interpreted data"""
     __tablename__ = 'interpreted'
     id = Column(Integer, primary_key=True)
-    geom = Column(Geometry(geometry_type='POLYGON', srid=4326))
+    geom = Column(Geometry(geometry_type='POLYGON', srid=4326, management=True))
     species_id = Column(Integer, ForeignKey('species.id'), index=True)
     inventory_id = Column(Integer, ForeignKey('inventory.id'))
     time_created = Column(DateTime(timezone=True), server_default=func.now())
@@ -132,7 +132,7 @@ class Tile(Base):
     """An IFO 50ha tile"""
     __tablename__ = 'tile'
     id = Column(Integer, primary_key=True)
-    geom = Column(Geometry(geometry_type='POLYGON', srid=4326))
+    geom = Column(Geometry(geometry_type='POLYGON', srid=4326, management=True))
     name = Column(String, unique=True)
 
     inventories = relationship("Inventory", back_populates='tile')
@@ -155,7 +155,7 @@ class Studyarea(Base):
     """
     __tablename__ = 'studyarea'
     id = Column(Integer, primary_key=True)
-    geom = Column(Geometry(geometry_type='POLYGON', srid=4326))
+    geom = Column(Geometry(geometry_type='POLYGON', srid=4326, management=True))
     name = Column(String, unique=True)
 
     @property

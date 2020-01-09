@@ -30,4 +30,5 @@ setup(name='idb',
           'jsonschema',
           'psycopg2-binary'],
       scripts=['idb/scripts/db_init.py',
+               'idb/scripts/copy_db.py',
                'idb/scripts/ingest_inventory.py'])

@@ -9,11 +9,12 @@ Example minimum configuration file (name: ``~/.idb``)
 
 .. code-block:: python
 
-    [idb]
-    db_database=idrop
-    # db_hostname=
-    # db_password=
-    # db_username=
+    [main]
+    drivername=postgresql
+    database=idrop
+    # hostname=
+    # password=
+    # username=
 
 
 3- Create database and add postgis extention
@@ -45,3 +46,28 @@ Navigate to the ``tests`` directory and run the ``ingests_test_data.py`` script.
 
     cd tests
     ./ingests_test_data.py
+
+
+Using different databases
+=========================
+
+Several databases can be configured in the same configuration file. For instance
+the example below combines two postgis databases in addition to a spatialite file
+database.
+
+.. code-block:: python
+
+    [main]
+    drivername=postgresql
+    database=idrop
+
+    [test]
+    drivername=postgresql
+    database=idrop-tests
+
+    [sqlite]
+    drivername=sqlite
+    database=/tmp/test_db.sqlite
+
+By default all idb commands and functions use the ``main`` environment. Using another
+environment requires passing its name to the ``env=`` argument in ``idb.db.session_scope()`` (also ``idb.db.init_db()``) or using the ``--env`` argument of command lines.
