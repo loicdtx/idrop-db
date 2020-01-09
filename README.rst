@@ -68,6 +68,7 @@ database.
     [sqlite]
     drivername=sqlite
     database=/tmp/test_db.sqlite
+    # Valid variable keys are those used by sqlalchemy.engine.url.URL
 
 By default all idb commands and functions use the ``main`` environment. Using another
 environment requires passing its name to the ``env=`` argument in ``idb.db.session_scope()`` (also ``idb.db.init_db()``) or using the ``--env`` argument of command lines.
