@@ -122,6 +122,7 @@ class Interpreted(Base):
         feature = {'type': 'Feature',
                    'properties': {'species_id': self.species_id,
                                   'species_name': self.species.name,
+                                  'species_code': self.species.code,
                                   'inventory_id': self.inventory_id,
                                   'id': self.id},
                    'geometry': mapping(to_shape(self.geom))}
