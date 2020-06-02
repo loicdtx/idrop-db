@@ -173,3 +173,49 @@ class Studyarea(Base):
         return cls(geom=geom,
                    name=feature['properties']['name'])
 
+
+class Experiment(Base):
+    """Training experiment
+    """
+    __tablename__ = 'experiment'
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
+    comment = Column(Text, nullable=True)
+
+    trainwindows = relationship("Trainwindow", back_populates='experiment')
+
+    @property
+    def dict(self):
+        return {'id': self.id,
+                'name': self.name,
+                'comment': self.comment}
+
+
+class Trainwindow(Base):
+    """Training windows
+    """
+    __tablename__ = 'trainwindow'
+    id = Column(Integer, primary_key=True)
+    geom = Column(Geometry(geometry_type='POLYGON', srid=4326, management=True))
+    experiment_id = Column(Integer, ForeignKey('experiment.id'))
+    complete = Column(Boolean) # Just a switch to help interpretation
+
+    experiment = relationship("Experiment", back_populates="trainwindows")
+
+    @property
+    def geojson(self):
+        feature = {'type': 'Feature',
+                   'properties': {'id': self.id,
+                                  'experiment': self.experiment.name,
+                                  'complete': self.complete},
+                   'geometry': mapping(to_shape(self.geom))}
+        return feature
+
+    @classmethod
+    def from_geojson(cls, feature):
+        geom = from_shape(shape(feature['geometry']), 4326)
+        return cls(geom=geom,
+                   experiment_id=feature['properties']['experiment_id'],
+                   complete=feature['properties']['complete'])
+
+
