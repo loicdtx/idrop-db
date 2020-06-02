@@ -6,7 +6,7 @@ from geoalchemy2 import Geography
 
 from idb.models import Species, Inventory, Interpreted, Studyarea
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 
 def add_inventories(session, fc):
