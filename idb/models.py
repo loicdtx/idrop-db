@@ -124,6 +124,7 @@ class Interpreted(Base):
                                   'species_name': self.species.name,
                                   'species_code': self.species.code,
                                   'inventory_id': self.inventory_id,
+                                  'time_created': self.time_created,
                                   'id': self.id},
                    'geometry': mapping(to_shape(self.geom))}
         return feature
