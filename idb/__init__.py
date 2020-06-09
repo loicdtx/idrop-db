@@ -1,10 +1,12 @@
 from sqlalchemy.types import Numeric
-from shapely.geometry import shape
+from shapely.geometry import shape, mapping
 
-from  sqlalchemy.sql.expression import func, cast
+from sqlalchemy.sql.expression import func, cast
 from geoalchemy2 import Geography
+from geoalchemy2.shape import to_shape
 
 from idb.models import Species, Inventory, Interpreted, Studyarea
+from idb.models import Trainwindow, Experiment
 
 __version__ = '0.2.0'
 
@@ -286,3 +288,41 @@ def neighborhood(session, inventory_id=None, distance=None, species_id=None):
             'features': [x.geojson for x in objects]}
 
 neighbourhood = neighborhood
+
+
+def windows(session, experiment_id, union=True):
+    """Retrieve all windows of an experiment
+
+    Overlapping windows are optionally unioned and the properties of the
+    individual windows aggregated
+
+    Args:
+        session: sqlalchemy database session
+        experiment_id (int): Database id of an experiment record
+        union (bool): Whether to union (see postgis' ST_Union) the overlapping
+            windows
+
+    Return:
+        dict: A feature collection of the windows belonging to that experiment
+    """
+    if union:
+        sq = session.query(Trainwindow.geom.ST_Union().ST_Dump().geom.label('geom'))\
+                .filter(Trainwindow.experiment_id==experiment_id).subquery()
+        q = session.query(sq.c.geom.label('geom'),
+                          func.array_agg(Trainwindow.id).label('ids'),
+                          func.bool_and(Trainwindow.complete).label('all_complete'))\
+                .filter(Trainwindow.experiment_id==experiment_id)\
+                .join(sq, sq.c.geom.ST_Intersects(Trainwindow.geom.ST_Centroid()))\
+                .group_by(sq.c.geom).all()
+        fc = [{'geometry': mapping(to_shape(item.geom)),
+               'properties': {'ids': item.ids,
+                              'all_complete': item.all_complete}} for item in q]
+    else:
+        q = session.query(Trainwindow).filter_by(experiment_id=experiment_id)
+        fc = [{'geometry': mapping(to_shape(item.geom)),
+               'properties': {'ids': [item.id],
+                              'all_complete': item.complete}} for item in q]
+    return {'type': 'FeatureCollection',
+            'features': fc}
+
+
