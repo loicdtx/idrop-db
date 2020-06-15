@@ -326,3 +326,10 @@ def windows(session, experiment_id, union=True):
             'features': fc}
 
 
+def experiments(session):
+    """Retrieve all experiments
+    """
+    objects = session.query(Experiment)
+    return [obj.dict for obj in objects]
+
+
