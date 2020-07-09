@@ -1,9 +1,10 @@
+from sqlalchemy.sql.expression import func, cast
 from sqlalchemy.types import Numeric
-from shapely.geometry import shape, mapping
+from shapely.geometry import shape, mapping, Point
 
 from sqlalchemy.sql.expression import func, cast
 from geoalchemy2 import Geography
-from geoalchemy2.shape import to_shape
+from geoalchemy2.shape import to_shape, from_shape
 
 from idb.models import Species, Inventory, Interpreted, Studyarea
 from idb.models import Trainwindow, Experiment
@@ -189,7 +190,8 @@ def replace_interpreted(session, id, feature):
     return True
 
 
-def interpreted(session, n_samples=None, species_id=None, inventory_id=None):
+def interpreted(session, n_samples=None, species_id=None, inventory_id=None,
+                spatial_filter=None):
     """Return a list of all interpreted records registered in the database
 
     Args:
@@ -198,6 +200,10 @@ def interpreted(session, n_samples=None, species_id=None, inventory_id=None):
         species_id (int): Optional species_id filter
         inventory_id (int): Optional inventory_id filter (returns a list of max
             one element)
+        spatial_filter (dict): A spatial filtering dictionnary. Must contain the
+            keys ``lon``, ``lat`` and ``radius``. Radius is in meters. A circle 
+            is buils using these paramters and only interpreted features that spatially
+            intersect with the circle are returned.
 
     Return:
         dict: A feature collection
@@ -207,6 +213,11 @@ def interpreted(session, n_samples=None, species_id=None, inventory_id=None):
         objects = objects.filter_by(species_id=species_id)
     if inventory_id is not None:
         objects = objects.filter_by(inventory_id=inventory_id)
+    if spatial_filter is not None:
+        p = Point(spatial_filter['lon'], spatial_filter['lat'])
+        geog = cast(from_shape(p, srid=4326), Geography)
+        circle = geog.ST_Buffer(spatial_filter['radius'])
+        objects = objects.filter(Interpreted.geom.ST_Intersects(circle))
     # limit number of results
     objects = objects.limit(n_samples).all()
     return {'type': 'FeatureCollection',
