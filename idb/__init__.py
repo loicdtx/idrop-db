@@ -328,6 +328,12 @@ def windows(session, experiment_id, union=True):
 
 def experiments(session):
     """Retrieve all experiments
+
+    Args:
+        session: sqlalchemy database session
+
+    Return:
+        list: List of experiments (list of dict)
     """
     objects = session.query(Experiment)
     return [obj.dict for obj in objects]
