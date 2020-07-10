@@ -369,3 +369,22 @@ def experiments(session):
     return [obj.dict for obj in objects]
 
 
+def update_trainwindows(session, ids, complete):
+    """Update a list of trainwindows (complete property)
+
+    Usually used to change the complete property after the windows have been fully
+    interpreted.
+
+    Args:
+        session: sqlalchemy database session
+        ids (list): List of trainwindows to update
+        complete (bool): Whether the ``complete`` property of the targetted
+            windows should be set to True or False
+
+    Return:
+        int: the number of rows updated when successful, 0 otherwise
+    """
+    updated = session.query(Trainwindow)\
+            .filter(Trainwindow.id.in_(ids))\
+            .update({'complete': complete}, synchronize_session=False)
+    return updated
