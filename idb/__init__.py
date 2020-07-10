@@ -9,7 +9,7 @@ from geoalchemy2.shape import to_shape, from_shape
 from idb.models import Species, Inventory, Interpreted, Studyarea
 from idb.models import Trainwindow, Experiment
 
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 
 
 def add_inventories(session, fc):
