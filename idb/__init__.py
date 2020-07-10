@@ -30,7 +30,7 @@ def add_inventories(session, fc):
 
 
 def _inventories(session, n_samples=None, study_area_id=None, species_id=None,
-                 is_interpreted=False):
+                 is_interpreted=False, spatial_filter=None):
     """Build a Query to filter the Inventory table
 
     Args:
@@ -42,6 +42,10 @@ def _inventories(session, n_samples=None, study_area_id=None, species_id=None,
             defaults to False (keep only records that have not yet been interpreted)
             Can also be None, in which case all interpreted and not interpreted
             records are returned
+        spatial_filter (dict): A spatial filtering dictionnary. Must contain the
+            keys ``lon``, ``lat`` and ``radius``. Radius is in meters. A circle 
+            is buils using these paramters and only interpreted features that spatially
+            intersect with the circle are returned.
 
     Returns:
         sqlalchemy.Query: The sqlalchemy query
@@ -60,13 +64,18 @@ def _inventories(session, n_samples=None, study_area_id=None, species_id=None,
     # Restrict for only one species
     if species_id is not None:
         objects = objects.filter_by(species_id=species_id)
+    if spatial_filter is not None:
+        p = Point(spatial_filter['lon'], spatial_filter['lat'])
+        geog = cast(from_shape(p, srid=4326), Geography)
+        circle = geog.ST_Buffer(spatial_filter['radius'])
+        objects = objects.filter(Inventory.geom.ST_Intersects(circle))
     # Select n random samples from the remaining rows
     objects = objects.order_by(func.random()).limit(n_samples)
     return objects
 
 
 def inventories(session, n_samples=None, study_area_id=None, species_id=None,
-                is_interpreted=False):
+                is_interpreted=False, spatial_filter=None):
     """Query the Inventory table with optional filters
 
     Only returns samples with ``is_interpreted`` set to False
@@ -80,19 +89,24 @@ def inventories(session, n_samples=None, study_area_id=None, species_id=None,
             defaults to False (keep only records that have not yet been interpreted)
             Can also be None, in which case all interpreted and not interpreted
             records are returned
+        spatial_filter (dict): A spatial filtering dictionnary. Must contain the
+            keys ``lon``, ``lat`` and ``radius``. Radius is in meters. A circle 
+            is buils using these paramters and only interpreted features that spatially
+            intersect with the circle are returned.
 
     Returns:
         dict: A feature collection
     """
     objects = _inventories(session=session, n_samples=n_samples,
                            study_area_id=study_area_id, species_id=species_id,
-                           is_interpreted=is_interpreted)
+                           is_interpreted=is_interpreted,
+                           spatial_filter=spatial_filter)
     return {'type': 'FeatureCollection',
             'features': [x.geojson for x in objects.all()]}
 
 
 def inventories_hits(session, n_samples=None, study_area_id=None, species_id=None,
-                     is_interpreted=False):
+                     is_interpreted=False, spatial_filter=None):
     """Get the length of a query with filters on the Inventory table
 
     Is meant to know the length of samples that a call to ``idb.inventories``
@@ -107,13 +121,18 @@ def inventories_hits(session, n_samples=None, study_area_id=None, species_id=Non
             defaults to False (keep only records that have not yet been interpreted)
             Can also be None, in which case all interpreted and not interpreted
             records are returned
+        spatial_filter (dict): A spatial filtering dictionnary. Must contain the
+            keys ``lon``, ``lat`` and ``radius``. Radius is in meters. A circle 
+            is buils using these paramters and only interpreted features that spatially
+            intersect with the circle are returned.
 
     Returns:
         int: The length of rows queried
     """
     objects = _inventories(session=session, n_samples=n_samples,
                            study_area_id=study_area_id, species_id=species_id,
-                           is_interpreted=is_interpreted)
+                           is_interpreted=is_interpreted,
+                           spatial_filter=spatial_filter)
     return objects.count()
 
 
